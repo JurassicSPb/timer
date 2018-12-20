@@ -1,5 +1,6 @@
 package timer.epam.com.timer
 
+import android.content.BroadcastReceiver
 import android.content.Intent
 import android.content.IntentFilter
 import android.os.Bundle
@@ -10,6 +11,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.plus
 import java.util.concurrent.TimeUnit
 import kotlin.coroutines.CoroutineContext
 
@@ -21,7 +23,7 @@ class TimerActivity :
         TimePickerFragment.TimePickerCallback {
 
     override val coroutineContext: CoroutineContext
-        get() = Dispatchers.Default + job
+        get() = Dispatchers.Default
     private lateinit var job: Job
     private lateinit var formatUtils: FormatUtils
     private var finishTime = 0L
@@ -32,13 +34,16 @@ class TimerActivity :
 //    private var needToBreak = false
     private var secondsLeft = 0L
     private var initialTime = 0L
+    private lateinit var timerBroadcastReceiver: TimerBroadcast
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_timer)
 
         val filter = IntentFilter(BROADCAST_TIMER_ACTION)
-        registerReceiver(TimerBroadcast().apply {
+
+        timerBroadcastReceiver = TimerBroadcast()
+        registerReceiver(timerBroadcastReceiver.apply {
             timerResultCallback = this@TimerActivity
         }, filter)
 
@@ -63,36 +68,42 @@ class TimerActivity :
     }
 
 
-    private fun launch() = launch {
+    private fun launch() = launch(coroutineContext + job) {
 
         while (true) {
 //            if (needToBreak) {
 //                needToBreak = false
 //                break
 //            }
-
             val currentTime = System.currentTimeMillis()
 
+            if (needToPause) {
+                if (currentTime < finishTime) {
+                    showTime(currentTime)
+                }
+                break
+            }
+
             if (currentTime < finishTime) {
-                secondsLeft = TimeUnit.MILLISECONDS.toSeconds(finishTime - currentTime)
-
-                val minutes = TimeUnit.SECONDS.toMinutes(secondsLeft) % 60
-
-                val hours = TimeUnit.SECONDS.toHours(secondsLeft) % 24
-
-                val seconds = secondsLeft % 60
-
-                result = formatUtils.formattedTime(hours, minutes, seconds)
-
-                timer.handler.post { timer.text = result }
+                showTime(currentTime)
 
                 delay(500)
             } else break
-
-            if (needToPause) {
-                break
-            }
         }
+    }
+
+    private fun showTime(currentTime: Long){
+        secondsLeft = TimeUnit.MILLISECONDS.toSeconds(finishTime - currentTime)
+
+        val minutes = TimeUnit.SECONDS.toMinutes(secondsLeft) % 60
+
+        val hours = TimeUnit.SECONDS.toHours(secondsLeft) % 24
+
+        val seconds = secondsLeft % 60
+
+        result = formatUtils.formattedTime(hours, minutes, seconds)
+
+        timer.handler.post { timer.text = result }
     }
 
     private fun checkIfOnPause() {
@@ -178,6 +189,8 @@ class TimerActivity :
     }
 
     override fun onDestroy() {
+        unregisterReceiver(timerBroadcastReceiver)
+
         super.onDestroy()
     }
 

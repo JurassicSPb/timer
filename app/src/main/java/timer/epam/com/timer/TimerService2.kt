@@ -22,13 +22,38 @@ class TimerService2 : Service() {
     private var job: Job? = null
     private var needToPause = false
     private var needToStop = false
-//    private var needToPlay = false
+    //    private var needToPlay = false
     private var finishTime = 0L
     private var secondsLeft = 0L
-    private var intentaActionPause = false
+    //    private var intentaActionPause = false
+    private var manager: NotificationManager? = null
+
+    private lateinit var builder: NotificationCompat.Builder
 
     override fun onCreate() {
         super.onCreate()
+
+        manager = getSystemService(Context.NOTIFICATION_SERVICE) as? NotificationManager
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            manager?.createNotificationChannel(NotificationChannel(CHANNEL_ID, "channelName", NotificationManager.IMPORTANCE_LOW))
+        }
+
+        builder = NotificationCompat.Builder(this, CHANNEL_ID)
+                .setSmallIcon(R.drawable.ic_launcher_foreground)
+                .setContentTitle("contentTitle")
+                .setContentText("contentText")
+                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+//                .setStyle(NotificationCompat.BigTextStyle()
+//                        .bigText("contentText")
+//                        .setBigContentTitle("contentTitle")
+//                )
+                .addAction(R.drawable.ic_launcher_foreground,
+                        "Stop",
+                        PendingIntent.getService(this, 0, Intent(this, TimerService2::class.java).apply {
+                            action = ACTION_STOP
+                        }, 0))
+//                    .setTicker("TICKER")
 
         formatUtils = FormatUtils.instance
     }
@@ -41,8 +66,21 @@ class TimerService2 : Service() {
 
         when (intent.action) {
             ACTION_STOP -> stopService()
-            ACTION_PAUSE -> pauseService()
-            ACTION_PLAY -> playService()
+            ACTION_PAUSE -> {
+//                pauseService()
+                needToPause = true
+                if (job == null) {
+                    run()
+                }
+            }
+            ACTION_PLAY -> {
+                job?.cancel()
+                needToPause = false
+//                playService()
+                switchButton("Play", "Pause", ACTION_PAUSE)
+                run()
+            }
+            else -> run()
         }
 
 //        intentaActionPause = intent.action == ACTION_PAUSE
@@ -57,76 +95,52 @@ class TimerService2 : Service() {
 //            needToPlay = false
 //        }
 
-        val manager = getSystemService(Context.NOTIFICATION_SERVICE) as? NotificationManager
+        return super.onStartCommand(intent, flags, startId)
+    }
 
-        val builder = NotificationCompat.Builder(this, CHANNEL_ID)
-                .setSmallIcon(R.drawable.ic_launcher_foreground)
-                .setContentTitle("contentTitle")
-                .setContentText("contentText")
-                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-//                .setStyle(NotificationCompat.BigTextStyle()
-//                        .bigText("contentText")
-//                        .setBigContentTitle("contentTitle")
-//                )
-                .addAction(R.drawable.ic_launcher_foreground,
-                        "Stop",
-                        PendingIntent.getService(this, 0, Intent(this, TimerService2::class.java).apply {
-                            action = ACTION_STOP
-                        }, 0))
-                .addAction(R.drawable.ic_launcher_foreground,
-                        "Pause",
-                        PendingIntent.getService(this, 1, Intent(this, TimerService2::class.java).apply {
-                            action = ACTION_PAUSE
-                        }, 0))
-//                    .setTicker("TICKER")
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            manager?.createNotificationChannel(NotificationChannel(CHANNEL_ID, "channelName", NotificationManager.IMPORTANCE_LOW
-            ))
-        }
+    private fun run() {
 
         job = GlobalScope.launch(Dispatchers.Default) {
             //            try {
             finishTime = System.currentTimeMillis() + TimeUnit.SECONDS.toMillis(secondsLeft)
 
             while (true) {
+//                if (needToPause) {
+////                    needToPause = false
+//                    builder.addAction(R.drawable.ic_launcher_foreground,
+//                            "Play",
+//                            PendingIntent.getService(this@TimerService2, 2, Intent(this@TimerService2, TimerService2::class.java).apply {
+//                                action = ACTION_PLAY
+//                            }, 0))
+//                    builder.setContentTitle(result)
+//                    startForeground(1, builder.build())
+//                    break
+//                }
+                val currentTime = System.currentTimeMillis()
+
                 if (needToStop) {
                     break
                 }
 
-                val currentTime = System.currentTimeMillis()
+                if (needToPause) {
+                    if (currentTime < finishTime) {
+                        showTime(currentTime)
+                        switchButton("Pause", "Play", ACTION_PLAY)
+                    }
+                    break
+                }
+
 
                 if (currentTime < finishTime) {
-                    secondsLeft = TimeUnit.MILLISECONDS.toSeconds(finishTime - currentTime)
-
-                    val minutes = TimeUnit.SECONDS.toMinutes(secondsLeft) % 60
-
-                    val hours = TimeUnit.SECONDS.toHours(secondsLeft) % 24
-
-                    val seconds = secondsLeft % 60
-
-                    result = formatUtils.formattedTime(hours, minutes, seconds)
-
-                    builder.setContentTitle(result)
-                    startForeground(1, builder.build())
+                    showTime(currentTime)
 
                     delay(500)
-                } else break
-
-                if (needToPause) {
-//                    needToPause = false
-                    builder.addAction(R.drawable.ic_launcher_foreground,
-                            "Play",
-                            PendingIntent.getService(this@TimerService2, 2, Intent(this@TimerService2, TimerService2::class.java).apply {
-                                action = ACTION_PLAY
-                            }, 0))
-                    builder.setContentTitle(result)
-                    startForeground(1, builder.build())
+                } else {
                     break
                 }
             }
 
-            if (result == "0 0 0" && shouldShow) {
+            if (result == "00:00:00" && shouldShow) {
                 builder.setContentTitle("finished")
                 manager?.notify(5, builder.build())
                 stopService()
@@ -135,20 +149,72 @@ class TimerService2 : Service() {
 //                stopService()
 //            }
         }
+    }
 
-        return super.onStartCommand(intent, flags, startId)
+    private fun showTime(currentTime: Long) {
+
+        secondsLeft = TimeUnit.MILLISECONDS.toSeconds(finishTime - currentTime)
+
+        val minutes = TimeUnit.SECONDS.toMinutes(secondsLeft) % 60
+
+        val hours = TimeUnit.SECONDS.toHours(secondsLeft) % 24
+
+        val seconds = secondsLeft % 60
+
+        result = formatUtils.formattedTime(hours, minutes, seconds)
+
+        builder.setContentTitle(result)
+        startForeground(1, builder.build())
     }
 
     private fun playService() {
 //        needToPlay = true
         needToPause = false
+//        startForeground(1, builder.build())
+
+//        val iterator = builder.mActions.iterator()
+//        while (iterator.hasNext()){
+//            val element = iterator.next()
+//            if (element.title == "Play") {
+//                iterator.remove()
+//                break
+//            }
+//        }
+//
+//        builder.addAction(R.drawable.ic_launcher_foreground,
+//                "Pause",
+//                PendingIntent.getService(this@TimerService2, 2, Intent(this@TimerService2, TimerService2::class.java).apply {
+//                    action = ACTION_PAUSE
+//                }, 0))
+//        builder.setContentTitle(result)
+
 //        finishTime = System.currentTimeMillis() + TimeUnit.SECONDS.toMillis(secondsLeft)
 
     }
 
     private fun pauseService() {
         needToPause = true
+
 //        finishTime = System.currentTimeMillis() + TimeUnit.SECONDS.toMillis(secondsLeft)
+    }
+
+    private fun switchButton(oldTitle: String, newTitle: String, action: String) {
+        val iterator = builder.mActions.iterator()
+        while (iterator.hasNext()) {
+            val element = iterator.next()
+            if (element.title == oldTitle) {
+                iterator.remove()
+                break
+            }
+        }
+
+        builder.addAction(R.drawable.ic_launcher_foreground,
+                newTitle,
+                PendingIntent.getService(this@TimerService2, 2, Intent(this@TimerService2, TimerService2::class.java).apply {
+                    this.action = action
+                }, 0))
+        builder.setContentTitle(result)
+        startForeground(1, builder.build())
     }
 
     private fun stopService() {
@@ -160,7 +226,7 @@ class TimerService2 : Service() {
 
     override fun onDestroy() {
         sendBroadcast(Intent(TimerActivity.BROADCAST_TIMER_ACTION).apply {
-//            putExtra("finish_time_from_service", finishTime)
+            //            putExtra("finish_time_from_service", finishTime)
             putExtra("finish_time_from_service", secondsLeft)
             putExtra("pause_key", needToPause)
             putExtra("stop_key", needToStop)

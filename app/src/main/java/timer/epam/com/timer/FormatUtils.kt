@@ -12,7 +12,7 @@ class FormatUtils private constructor() {
         try {
             val date = simpleDateFormat.parse("$hourOfDay:$minute:$seconds")
             return simpleDateFormat.format(date)
-        } catch (e: ParseException) {
+        } catch (e: Exception) {
             e.printStackTrace()
         }
         return DEFAULT_VALUE
