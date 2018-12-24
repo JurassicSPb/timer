@@ -107,14 +107,20 @@ class TimerService : Service() {
     }
 
     private fun pauseService() {
-        needToPause = true
-        needToPlay = false
-        val currentTime = System.currentTimeMillis()
-        timeToFinish = currentTime + TimeUnit.SECONDS.toMillis(secondsLeft)
-        if (currentTime < timeToFinish) {
-            showTime(currentTime)
-            val notification = notificationHelper.switchButtonBuilder(this, PAUSE, PLAY, ACTION_PLAY, result)
-            startForeground(1, notification?.build())
+        job = GlobalScope.launch(Dispatchers.Default) {
+
+            needToPause = true
+            needToPlay = false
+            val currentTime = System.currentTimeMillis()
+            timeToFinish = currentTime + TimeUnit.SECONDS.toMillis(secondsLeft)
+
+            delay(initialDelay)
+
+            if (currentTime < timeToFinish) {
+                showTime(currentTime)
+                val notification = notificationHelper.switchButtonBuilder(this@TimerService, PAUSE, PLAY, ACTION_PLAY, result)
+                startForeground(1, notification?.build())
+            }
         }
     }
 
