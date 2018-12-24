@@ -21,6 +21,7 @@ class TimerService2 : Service() {
     private var result = ""
     private var job: Job? = null
     private var needToPause = false
+    private var needToPlay = false
     private var needToStop = false
     //    private var needToPlay = false
     private var finishTime = 0L
@@ -64,23 +65,37 @@ class TimerService2 : Service() {
 
         if (intent.hasExtra("finish_key")) secondsLeft = intent.getLongExtra("finish_key", 0L)
 
+        job?.cancel()
+        job = null
+
         when (intent.action) {
             ACTION_STOP -> stopService()
             ACTION_PAUSE -> {
 //                pauseService()
+//                job?.cancel()
+//                job = null
                 needToPause = true
-                if (job == null) {
-                    run()
+                needToPlay = false
+                val currentTime = System.currentTimeMillis()
+                finishTime = currentTime + TimeUnit.SECONDS.toMillis(secondsLeft)
+                if (currentTime < finishTime) {
+                    showTime(currentTime)
+                    switchButton("Pause", "Play", ACTION_PLAY)
                 }
+//                if (job == null) {
+//                    finishTime = System.currentTimeMillis() + TimeUnit.SECONDS.toMillis(secondsLeft)
+//                    run()
+//                }
             }
             ACTION_PLAY -> {
-                job?.cancel()
+//                job?.cancel()
+//                job = null
                 needToPause = false
+                needToPlay = true
 //                playService()
-                switchButton("Play", "Pause", ACTION_PAUSE)
+//                finishTime = System.currentTimeMillis() + TimeUnit.SECONDS.toMillis(secondsLeft)
                 run()
             }
-            else -> run()
         }
 
 //        intentaActionPause = intent.action == ACTION_PAUSE
@@ -103,6 +118,7 @@ class TimerService2 : Service() {
         job = GlobalScope.launch(Dispatchers.Default) {
             //            try {
             finishTime = System.currentTimeMillis() + TimeUnit.SECONDS.toMillis(secondsLeft)
+            delay(200)
 
             while (true) {
 //                if (needToPause) {
@@ -122,21 +138,25 @@ class TimerService2 : Service() {
                     break
                 }
 
-                if (needToPause) {
-                    if (currentTime < finishTime) {
-                        showTime(currentTime)
-                        switchButton("Pause", "Play", ACTION_PLAY)
-                    }
-                    break
-                }
+//                if (needToPause) {
+//                    if (currentTime < finishTime) {
+//                        showTime(currentTime)
+//                        switchButton("Pause", "Play", ACTION_PLAY)
+//                    }
+//                    break
+//                }
 
 
                 if (currentTime < finishTime) {
                     showTime(currentTime)
+                    if (needToPlay) {
+                        switchButton("Play", "Pause", ACTION_PAUSE)
+                        needToPlay = false
+                    }
 
                     delay(500)
                 } else {
-                    break
+                    break // sound
                 }
             }
 
@@ -150,6 +170,7 @@ class TimerService2 : Service() {
 //            }
         }
     }
+
 
     private fun showTime(currentTime: Long) {
 

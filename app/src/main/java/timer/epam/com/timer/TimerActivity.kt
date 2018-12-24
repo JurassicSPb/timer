@@ -33,7 +33,7 @@ class TimerActivity :
     //    private var dataFromService = false
 //    private var needToBreak = false
     private var secondsLeft = 0L
-    private var initialTime = 0L
+    private var initialTime = -1L
     private lateinit var timerBroadcastReceiver: TimerBroadcast
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -49,12 +49,22 @@ class TimerActivity :
 
         start_timer.setOnClickListener {
             //            val currentTimeSeconds = System.currentTimeMillis()
-            checkIfOnPause()
+            job.cancel()
+            job = Job()
+            needToPause = false
             launch()
         }
 
         stop_timer.setOnClickListener {
+            job.cancel()
+            job = Job()
             needToPause = true
+            val currentTime = System.currentTimeMillis()
+            finishTime = System.currentTimeMillis() + TimeUnit.SECONDS.toMillis(secondsLeft)
+
+                if (currentTime < finishTime) {
+                    showTime(currentTime)
+                }
 //            needToBreak = true
         }
 
@@ -69,6 +79,8 @@ class TimerActivity :
 
 
     private fun launch() = launch(coroutineContext + job) {
+        checkIfOnPause()
+        delay(200)
 
         while (true) {
 //            if (needToBreak) {
@@ -77,18 +89,18 @@ class TimerActivity :
 //            }
             val currentTime = System.currentTimeMillis()
 
-            if (needToPause) {
-                if (currentTime < finishTime) {
-                    showTime(currentTime)
-                }
-                break
-            }
+//            if (needToPause) {
+//                if (currentTime < finishTime) {
+//                    showTime(currentTime)
+//                }
+//                break
+//            }
 
             if (currentTime < finishTime) {
                 showTime(currentTime)
 
                 delay(500)
-            } else break
+            } else break // sound
         }
     }
 
@@ -107,11 +119,11 @@ class TimerActivity :
     }
 
     private fun checkIfOnPause() {
-        if (!needToPause) {
+        if (initialTime != -1L) {
             finishTime = System.currentTimeMillis() + initialTime
+            initialTime = -1L
         } else {
             finishTime = System.currentTimeMillis() + TimeUnit.SECONDS.toMillis(secondsLeft)
-            needToPause = false
 //            needToPause = false
         }
     }
@@ -166,7 +178,7 @@ class TimerActivity :
         if (onStop) {
             finishTime = 0L
             needToPause = false
-            finishTime = 0L
+            initialTime = -1L
             result = DEFAULT_RESULT
             secondsLeft = 0L
             timer.text = ""
@@ -178,8 +190,12 @@ class TimerActivity :
             secondsLeft = finishedTime
 //            dataFromService = true
             needToPause = onPause
-            finishTime = System.currentTimeMillis() + TimeUnit.SECONDS.toMillis(secondsLeft)
-            launch()
+//            finishTime = System.currentTimeMillis() + TimeUnit.SECONDS.toMillis(secondsLeft)
+            if (!onPause) {
+                start_timer.performClick()
+            } else {
+                stop_timer.performClick()
+            }
 //            if (onPause) stop_timer.callOnClick()
 //            start_timer.callOnClick()
 //            needToBreak = onPause
@@ -198,6 +214,6 @@ class TimerActivity :
         private const val ACTION_PAUSE = "actionPause"
         private const val ACTION_PLAY = "actionPlay"
         const val BROADCAST_TIMER_ACTION = "timer_action"
-        private const val DEFAULT_RESULT = "0 0 0"
+        private const val DEFAULT_RESULT = "00:00:00"
     }
 }

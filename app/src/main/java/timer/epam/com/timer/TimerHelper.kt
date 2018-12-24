@@ -21,10 +21,6 @@ class TimerHelper private constructor() {
         }
     }
 
-    interface TimerResultCallback{
-        fun onTimerResult(result: String)
-    }
-
     private object Holder {
         val INSTANCE = TimerHelper()
     }
