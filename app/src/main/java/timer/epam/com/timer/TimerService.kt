@@ -102,7 +102,6 @@ class TimerService : Service() {
 
     private fun stopService() {
         needToStop = true
-        cancelJob()
         stopForeground(true)
         stopSelf()
     }
@@ -136,6 +135,7 @@ class TimerService : Service() {
             putExtra(PAUSE_KEY, needToPause)
             putExtra(STOP_KEY, needToStop)
         })
+        cancelJob()
         super.onDestroy()
     }
 

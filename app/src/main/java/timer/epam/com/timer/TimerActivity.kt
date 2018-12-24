@@ -137,8 +137,8 @@ class TimerActivity :
             }
             TimerService.shouldShow = true // maybe to intent?
             startService(intent)
-            job.cancel()
         }
+        job.cancel()
 
         super.onStop()
     }
