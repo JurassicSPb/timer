@@ -34,6 +34,7 @@ class TimerActivity :
     private var initialTime = DEFAULT_TIME
     private lateinit var timerBroadcastReceiver: TimerBroadcast
     private var ringtone: Ringtone? = null
+    private var initialTimeSet = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -76,8 +77,12 @@ class TimerActivity :
 
     private fun launch() = launch(coroutineContext + job) {
         when {
-            initialTime == DEFAULT_TIME -> return@launch
-            initialTime != DEFAULT_TIME -> {
+            initialTime == DEFAULT_TIME && initialTimeSet -> {
+                initialTimeSet = false
+                return@launch
+            }
+            initialTime != DEFAULT_TIME && initialTimeSet -> {
+                initialTimeSet = false
                 timeToFinish = System.currentTimeMillis() + initialTime
                 initialTime = DEFAULT_TIME
             }
@@ -125,7 +130,7 @@ class TimerActivity :
     }
 
     override fun onStop() {
-        if (result != DEFAULT_RESULT) {
+        if (result != DEFAULT_RESULT && !initialTimeSet) {
             val intent = Intent(this, TimerService::class.java).apply {
                 putExtra(SECONDS_LEFT_KEY, secondsLeft)
                 action = if (needToPause) ACTION_PAUSE else ACTION_PLAY
@@ -149,6 +154,8 @@ class TimerActivity :
             initialTime = TimeUnit.HOURS.toMillis(hourOfDay.toLong()) +
                     TimeUnit.MINUTES.toMillis(minute.toLong()) +
                     TimeUnit.SECONDS.toMillis(seconds.toLong())
+
+            initialTimeSet = true
         }
     }
 
