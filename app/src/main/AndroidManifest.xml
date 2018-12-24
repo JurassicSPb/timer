@@ -21,7 +21,6 @@
 
         <service android:name=".TimerService"/>
 
-        <service android:name=".TimerService2"/>
     </application>
 
 </manifest>

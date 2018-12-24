@@ -1,6 +1,5 @@
 package timer.epam.com.timer
 
-import android.content.BroadcastReceiver
 import android.content.Intent
 import android.content.IntentFilter
 import android.os.Bundle
@@ -11,7 +10,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.plus
 import java.util.concurrent.TimeUnit
 import kotlin.coroutines.CoroutineContext
 
@@ -141,20 +139,20 @@ class TimerActivity :
         super.onStart()
 
         job = Job()
-        TimerService2.shouldShow = false // maybe to intent?
-        stopService(Intent(this, TimerService2::class.java))
+        TimerService.shouldShow = false // maybe to intent?
+        stopService(Intent(this, TimerService::class.java))
     }
 
     override fun onStop() {
         if (result != DEFAULT_RESULT) {
-            val intent = Intent(this, TimerService2::class.java).apply {
+            val intent = Intent(this, TimerService::class.java).apply {
                 //                putExtra("finish_key", finishTime)
                 putExtra("finish_key", secondsLeft)
 //                putExtra("pause_key", needToPause)
                 action = if (needToPause) ACTION_PAUSE else ACTION_PLAY
             }
 //        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            TimerService2.shouldShow = true // maybe to intent?
+            TimerService.shouldShow = true // maybe to intent?
             startService(intent)
             job.cancel()
 //        } else {
