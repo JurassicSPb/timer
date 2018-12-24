@@ -147,7 +147,7 @@ class TimerActivity :
         if (result != DEFAULT_RESULT) {
             val intent = Intent(this, TimerService::class.java).apply {
                 //                putExtra("finish_key", finishTime)
-                putExtra("finish_key", secondsLeft)
+                putExtra(SECONDS_LEFT_KEY, secondsLeft)
 //                putExtra("pause_key", needToPause)
                 action = if (needToPause) ACTION_PAUSE else ACTION_PLAY
             }
@@ -213,5 +213,6 @@ class TimerActivity :
         private const val ACTION_PLAY = "actionPlay"
         const val BROADCAST_TIMER_ACTION = "timer_action"
         private const val DEFAULT_RESULT = "00:00:00"
+        private const val SECONDS_LEFT_KEY = "secondsLeftKey"
     }
 }

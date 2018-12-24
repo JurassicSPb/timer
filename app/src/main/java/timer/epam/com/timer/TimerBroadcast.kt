@@ -4,17 +4,23 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 
-class TimerBroadcast : BroadcastReceiver(){ // make singleton?
+class TimerBroadcast : BroadcastReceiver() {
 
     var timerResultCallback: TimerResultCallback? = null
 
     override fun onReceive(context: Context, intent: Intent) {
-        timerResultCallback?.onTimerResult(intent.getLongExtra("finish_time_from_service", 0L),
-                intent.getBooleanExtra("pause_key", false),
-                intent.getBooleanExtra("stop_key", false))
+        timerResultCallback?.onTimerResult(intent.getLongExtra(SECONDS_LEFT_SERVICE_KEY, 0L),
+                intent.getBooleanExtra(PAUSE_KEY, false),
+                intent.getBooleanExtra(STOP_KEY, false))
     }
 
-    interface TimerResultCallback{
+    interface TimerResultCallback {
         fun onTimerResult(finishedTime: Long, onPause: Boolean, onStop: Boolean)
+    }
+
+    companion object {
+        private const val PAUSE_KEY = "pauseKey"
+        private const val STOP_KEY = "stopKey"
+        private const val SECONDS_LEFT_SERVICE_KEY = "secondsLeftServiceKey"
     }
 }

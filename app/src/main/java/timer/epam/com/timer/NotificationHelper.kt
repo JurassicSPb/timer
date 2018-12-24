@@ -52,12 +52,17 @@ class NotificationHelper private constructor() {
         return builder
     }
 
-    fun finishedNotification(){
+    fun finishedNotification() {
+        val iterator = builder!!.mActions.iterator()
+        while (iterator.hasNext()) {
+            iterator.remove()
+        }
+
         builder?.setContentTitle(FINISHED)
         manager?.notify(5, builder?.build())
     }
 
-    fun updateNotificationBuilder(result: String) : NotificationCompat.Builder?{
+    fun updateNotificationBuilder(result: String): NotificationCompat.Builder? {
         builder?.setContentTitle(result)
         return builder
     }
