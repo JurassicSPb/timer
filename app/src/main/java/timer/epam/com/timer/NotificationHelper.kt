@@ -55,6 +55,7 @@ class NotificationHelper private constructor() {
     fun finishedNotification() {
         val iterator = builder!!.mActions.iterator()
         while (iterator.hasNext()) {
+            iterator.next()
             iterator.remove()
         }
 
@@ -75,7 +76,6 @@ class NotificationHelper private constructor() {
         val instance: NotificationHelper by lazy { Holder.INSTANCE }
         private const val CHANNEL_ID = "timerChannelId"
         private const val CHANNEL_NAME = "timerChannel"
-
         private const val CONTENT_TEXT = "Таймер"
         private const val STOP = "Cтоп"
         private const val FINISHED = "Готово!"

@@ -18,8 +18,8 @@ class TimerService : Service() {
     private var needToPause = false
     private var needToPlay = false
     private var needToStop = false
-    private var timeToFinish = 0L
-    private var secondsLeft = 0L
+    private var timeToFinish = DEFAULT_TIME
+    private var secondsLeft = DEFAULT_TIME
 
     override fun onCreate() {
         super.onCreate()
@@ -37,7 +37,7 @@ class TimerService : Service() {
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
 
         if (intent.hasExtra(SECONDS_LEFT_KEY)) {
-            secondsLeft = intent.getLongExtra(SECONDS_LEFT_KEY, 0L)
+            secondsLeft = intent.getLongExtra(SECONDS_LEFT_KEY, DEFAULT_TIME)
         }
 
         cancelJob()
@@ -89,11 +89,11 @@ class TimerService : Service() {
     private fun showTime(currentTime: Long) {
         secondsLeft = TimeUnit.MILLISECONDS.toSeconds(timeToFinish - currentTime)
 
-        val minutes = TimeUnit.SECONDS.toMinutes(secondsLeft) % 60
+        val minutes = TimeUnit.SECONDS.toMinutes(secondsLeft) % SEC_MINS
 
-        val hours = TimeUnit.SECONDS.toHours(secondsLeft) % 24
+        val hours = TimeUnit.SECONDS.toHours(secondsLeft) % HOURS
 
-        val seconds = secondsLeft % 60
+        val seconds = secondsLeft % SEC_MINS
 
         result = formatUtils.formattedTime(hours, minutes, seconds)
 
@@ -152,6 +152,9 @@ class TimerService : Service() {
         private const val SECONDS_LEFT_SERVICE_KEY = "secondsLeftServiceKey"
         private const val initialDelay = 200L
         private const val delay = 500L
+        private const val DEFAULT_TIME = 0L
+        private const val HOURS = 24
+        private const val SEC_MINS = 60
         @Volatile
         var shouldShow = false
     }
