@@ -7,6 +7,7 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.support.v4.app.NotificationCompat
+import android.support.v4.content.ContextCompat
 
 class NotificationHelper private constructor() {
     private var manager: NotificationManager? = null
@@ -22,10 +23,11 @@ class NotificationHelper private constructor() {
 
     fun createInitialNotification(context: Context) {
         builder = NotificationCompat.Builder(context, CHANNEL_ID)
-                .setSmallIcon(R.drawable.ic_launcher_foreground)
+                .setSmallIcon(R.drawable.ic_timer)
+                .setColor(ContextCompat.getColor(context, R.color.colorPrimary))
                 .setContentText(CONTENT_TEXT)
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-                .addAction(R.drawable.ic_launcher_foreground,
+                .addAction(R.drawable.ic_timer,
                         STOP,
                         PendingIntent.getService(context, 0, Intent(context, TimerService::class.java).apply {
                             action = TimerService.ACTION_STOP
@@ -42,12 +44,13 @@ class NotificationHelper private constructor() {
             }
         }
 
-        builder?.addAction(R.drawable.ic_launcher_foreground,
+        builder?.addAction(R.drawable.ic_timer,
                 newTitle,
                 PendingIntent.getService(context, 2, Intent(context, TimerService::class.java).apply {
                     this.action = action
                 }, 0))
-        builder?.setContentTitle(result)
+                ?.setContentTitle(result)
+                ?.setContentText(if (action == ACTION_PAUSE) CONTENT_TEXT else CONTENT_TEXT_PAUSE)
 
         return builder
     }
@@ -77,6 +80,8 @@ class NotificationHelper private constructor() {
         private const val CHANNEL_ID = "timerChannelId"
         private const val CHANNEL_NAME = "timerChannel"
         private const val CONTENT_TEXT = "Таймер"
+        private const val CONTENT_TEXT_PAUSE = "Таймер приостановлен"
+        const val ACTION_PAUSE = "actionPause"
         private const val STOP = "Cтоп"
         private const val FINISHED = "Готово!"
     }
