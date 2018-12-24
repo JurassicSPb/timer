@@ -5,6 +5,8 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.media.Ringtone
+import android.media.RingtoneManager
 import android.os.Build
 import android.support.v4.app.NotificationCompat
 import android.support.v4.content.ContextCompat
@@ -69,6 +71,19 @@ class NotificationHelper private constructor() {
     fun updateNotificationBuilder(result: String): NotificationCompat.Builder? {
         builder?.setContentTitle(result)
         return builder
+    }
+
+    fun getRingtone(context: Context): Ringtone {
+        var alert = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)
+
+        if (alert == null) {
+            alert = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
+            if (alert == null) {
+                alert = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_RINGTONE)
+            }
+        }
+
+        return RingtoneManager.getRingtone(context, alert)
     }
 
     private object Holder {

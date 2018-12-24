@@ -2,6 +2,7 @@ package timer.epam.com.timer
 
 import android.content.Intent
 import android.content.IntentFilter
+import android.media.Ringtone
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import kotlinx.android.synthetic.main.activity_timer.*
@@ -24,13 +25,15 @@ class TimerActivity :
         get() = Dispatchers.Default
     private lateinit var job: Job
     private lateinit var formatUtils: FormatUtils
+    private lateinit var notificationHelper: NotificationHelper
     private var timeToFinish = DEFAULT_TIME
     private var result = DEFAULT_RESULT
 
     private var needToPause = false
-    private var secondsLeft = 0L
-    private var initialTime = DEFAULT_INITIAL_TIME
+    private var secondsLeft = DEFAULT_TIME
+    private var initialTime = DEFAULT_TIME
     private lateinit var timerBroadcastReceiver: TimerBroadcast
+    private var ringtone: Ringtone? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -57,6 +60,7 @@ class TimerActivity :
             if (currentTime < timeToFinish) {
                 showTime(currentTime)
             }
+            // stop rington on cancel button when time is off
         }
 
         show_time_dialog.setOnClickListener {
@@ -66,11 +70,20 @@ class TimerActivity :
         }
 
         formatUtils = FormatUtils.instance
+        notificationHelper = NotificationHelper.instance
     }
 
 
     private fun launch() = launch(coroutineContext + job) {
-        checkIfOnPause()
+        when {
+            initialTime == DEFAULT_TIME -> return@launch
+            initialTime != DEFAULT_TIME -> {
+                timeToFinish = System.currentTimeMillis() + initialTime
+                initialTime = DEFAULT_TIME
+            }
+            else -> timeToFinish = System.currentTimeMillis() + TimeUnit.SECONDS.toMillis(secondsLeft)
+        }
+
         delay(initialDelay)
 
         while (true) {
@@ -80,7 +93,12 @@ class TimerActivity :
                 showTime(currentTime)
 
                 delay(delay)
-            } else break // sound
+            } else {
+                timer.text = ""
+                ringtone = notificationHelper.getRingtone(this@TimerActivity)
+                ringtone?.play()
+                break
+            }
         }
     }
 
@@ -96,15 +114,6 @@ class TimerActivity :
         result = formatUtils.formattedTime(hours, minutes, seconds)
 
         timer.handler.post { timer.text = result }
-    }
-
-    private fun checkIfOnPause() {
-        if (initialTime != DEFAULT_INITIAL_TIME) {
-            timeToFinish = System.currentTimeMillis() + initialTime
-            initialTime = DEFAULT_INITIAL_TIME
-        } else {
-            timeToFinish = System.currentTimeMillis() + TimeUnit.SECONDS.toMillis(secondsLeft)
-        }
     }
 
     override fun onStart() {
@@ -130,20 +139,24 @@ class TimerActivity :
     }
 
     override fun onTimeSet(hourOfDay: Int, minute: Int, seconds: Int) {
+        ringtone?.stop()
+
         cancelJob()
 
-        timer.text = formatUtils.formattedTime(hourOfDay.toLong(), minute.toLong(), seconds.toLong())
+        if (hourOfDay + minute + seconds > DEFAULT_TIME) {
+            timer.text = formatUtils.formattedTime(hourOfDay.toLong(), minute.toLong(), seconds.toLong())
 
-        initialTime = TimeUnit.HOURS.toMillis(hourOfDay.toLong()) +
-                TimeUnit.MINUTES.toMillis(minute.toLong()) +
-                TimeUnit.SECONDS.toMillis(seconds.toLong())
+            initialTime = TimeUnit.HOURS.toMillis(hourOfDay.toLong()) +
+                    TimeUnit.MINUTES.toMillis(minute.toLong()) +
+                    TimeUnit.SECONDS.toMillis(seconds.toLong())
+        }
     }
 
     override fun onTimerResult(timeToFinish: Long, onPause: Boolean, onStop: Boolean) {
         if (onStop) {
             this.timeToFinish = DEFAULT_TIME
             needToPause = false
-            initialTime = DEFAULT_INITIAL_TIME
+            initialTime = DEFAULT_TIME
             result = DEFAULT_RESULT
             secondsLeft = DEFAULT_TIME
             timer.text = ""
@@ -180,7 +193,6 @@ class TimerActivity :
         private const val SET_TIME = "set_time"
         private const val initialDelay = 200L
         private const val delay = 500L
-        private const val DEFAULT_INITIAL_TIME = -1L
         private const val DEFAULT_TIME = 0L
         private const val HOURS = 24
         private const val SEC_MINS = 60
