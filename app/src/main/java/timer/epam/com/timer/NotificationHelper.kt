@@ -30,30 +30,24 @@ class NotificationHelper private constructor() {
                 .setColor(ContextCompat.getColor(context, R.color.colorPrimary))
                 .setContentText(CONTENT_TEXT)
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-                .addAction(R.drawable.ic_timer,
-                        STOP,
-                        PendingIntent.getService(context, 1, Intent(context, TimerService::class.java).apply {
-                            action = ACTION_STOP
-                        }, PendingIntent.FLAG_CANCEL_CURRENT))
+
     }
 
-    fun switchButtonBuilder(context: Context, oldTitle: String, newTitle: String, action: String, result: String): NotificationCompat.Builder? {
+    fun switchButtonBuilder(context: Context, newTitle: String, action: String, result: String): NotificationCompat.Builder? {
+        builder?.mActions?.clear()
+
         builder?.addAction(R.drawable.ic_timer,
-                newTitle,
+                STOP,
                 PendingIntent.getService(context, 1, Intent(context, TimerService::class.java).apply {
-                    this.action = action
-                }, PendingIntent.FLAG_CANCEL_CURRENT))
+                    this.action = ACTION_STOP
+                }, PendingIntent.FLAG_UPDATE_CURRENT))
+                ?.addAction(R.drawable.ic_timer,
+                        newTitle,
+                        PendingIntent.getService(context, 2, Intent(context, TimerService::class.java).apply {
+                            this.action = action
+                        }, PendingIntent.FLAG_UPDATE_CURRENT))
                 ?.setContentTitle(result)
                 ?.setContentText(if (action == ACTION_PAUSE) CONTENT_TEXT else CONTENT_TEXT_PAUSE)
-
-        val iterator = builder?.mActions?.iterator()
-        while (iterator != null && iterator.hasNext()) {
-            val element = iterator.next()
-            if (element.getTitle() == oldTitle) {
-                iterator.remove()
-                break
-            }
-        }
 
         return builder
     }

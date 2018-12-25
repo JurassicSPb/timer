@@ -89,7 +89,7 @@ class TimerActivity :
             else -> timeToFinish = System.currentTimeMillis() + millisLeft
         }
 
-        delay(initialDelay)
+//        delay(initialDelay)
 
         while (true) {
             val currentTime = System.currentTimeMillis()
