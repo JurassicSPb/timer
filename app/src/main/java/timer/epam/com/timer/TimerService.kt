@@ -69,10 +69,10 @@ class TimerService : Service() {
                     showTime(currentTime)
                     if (needToPlay) {
                         val notification = notificationHelper.switchButtonBuilder(this@TimerService, PLAY, PAUSE, ACTION_PAUSE, result)
-                        notificationHelper.updateNotification(notification?.build())
+                        startForeground(1, notification?.build())
                         needToPlay = false
                     } else {
-                        startForeground(1, notificationHelper.updateNotificationBuilder(result)?.build())
+                        notificationHelper.updateNotification(notificationHelper.updateNotificationBuilder(result)?.build())
                     }
 
                     delay(delay)

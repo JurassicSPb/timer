@@ -27,34 +27,33 @@ class NotificationHelper private constructor() {
     fun createInitialNotification(context: Context) {
         builder = NotificationCompat.Builder(context, CHANNEL_ID)
                 .setSmallIcon(R.drawable.ic_timer)
-                .setAutoCancel(false)
                 .setColor(ContextCompat.getColor(context, R.color.colorPrimary))
                 .setContentText(CONTENT_TEXT)
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT)
                 .addAction(R.drawable.ic_timer,
                         STOP,
-                        PendingIntent.getService(context, 2, Intent(context, TimerService::class.java).apply {
+                        PendingIntent.getService(context, 1, Intent(context, TimerService::class.java).apply {
                             action = ACTION_STOP
-                        }, 0))
+                        }, PendingIntent.FLAG_CANCEL_CURRENT))
     }
 
     fun switchButtonBuilder(context: Context, oldTitle: String, newTitle: String, action: String, result: String): NotificationCompat.Builder? {
-        val iterator = builder!!.mActions.iterator()
-        while (iterator.hasNext()) {
+        builder?.addAction(R.drawable.ic_timer,
+                newTitle,
+                PendingIntent.getService(context, 1, Intent(context, TimerService::class.java).apply {
+                    this.action = action
+                }, PendingIntent.FLAG_CANCEL_CURRENT))
+                ?.setContentTitle(result)
+                ?.setContentText(if (action == ACTION_PAUSE) CONTENT_TEXT else CONTENT_TEXT_PAUSE)
+
+        val iterator = builder?.mActions?.iterator()
+        while (iterator != null && iterator.hasNext()) {
             val element = iterator.next()
             if (element.getTitle() == oldTitle) {
                 iterator.remove()
                 break
             }
         }
-
-        builder?.addAction(R.drawable.ic_timer,
-                newTitle,
-                PendingIntent.getService(context, 3, Intent(context, TimerService::class.java).apply {
-                    this.action = action
-                }, PendingIntent.FLAG_CANCEL_CURRENT))
-                ?.setContentTitle(result)
-                ?.setContentText(if (action == ACTION_PAUSE) CONTENT_TEXT else CONTENT_TEXT_PAUSE)
 
         return builder
     }
