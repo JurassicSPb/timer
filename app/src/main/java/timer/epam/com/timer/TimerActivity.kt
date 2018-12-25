@@ -30,7 +30,7 @@ class TimerActivity :
     private var result = DEFAULT_RESULT
 
     private var needToPause = false
-    private var secondsLeft = DEFAULT_TIME
+    private var millisLeft = DEFAULT_TIME
     private var initialTime = DEFAULT_TIME
     private lateinit var timerBroadcastReceiver: TimerBroadcast
     private var ringtone: Ringtone? = null
@@ -57,7 +57,7 @@ class TimerActivity :
             cancelJob()
             needToPause = true
             val currentTime = System.currentTimeMillis()
-            timeToFinish = System.currentTimeMillis() + TimeUnit.SECONDS.toMillis(secondsLeft)
+            timeToFinish = System.currentTimeMillis() + millisLeft
             if (currentTime < timeToFinish) {
                 showTime(currentTime)
             }
@@ -86,7 +86,7 @@ class TimerActivity :
                 timeToFinish = System.currentTimeMillis() + initialTime
                 initialTime = DEFAULT_TIME
             }
-            else -> timeToFinish = System.currentTimeMillis() + TimeUnit.SECONDS.toMillis(secondsLeft)
+            else -> timeToFinish = System.currentTimeMillis() + millisLeft
         }
 
         delay(initialDelay)
@@ -99,7 +99,7 @@ class TimerActivity :
 
                 delay(delay)
             } else {
-                timer.text = ""
+                timer.handler.post { timer.text = "" }
                 ringtone = notificationHelper.getRingtone(this@TimerActivity)
                 ringtone?.play()
                 break
@@ -108,13 +108,13 @@ class TimerActivity :
     }
 
     private fun showTime(currentTime: Long) {
-        secondsLeft = TimeUnit.MILLISECONDS.toSeconds(timeToFinish - currentTime)
+        millisLeft = timeToFinish - currentTime
 
-        val minutes = TimeUnit.SECONDS.toMinutes(secondsLeft) % SEC_MINS
+        val minutes = TimeUnit.MILLISECONDS.toMinutes(millisLeft) % SEC_MINS
 
-        val hours = TimeUnit.SECONDS.toHours(secondsLeft) % HOURS
+        val hours = TimeUnit.MILLISECONDS.toHours(millisLeft) % HOURS
 
-        val seconds = secondsLeft % SEC_MINS
+        val seconds = TimeUnit.MILLISECONDS.toSeconds(millisLeft) % SEC_MINS
 
         result = formatUtils.formattedTime(hours, minutes, seconds)
 
@@ -132,7 +132,7 @@ class TimerActivity :
     override fun onStop() {
         if (result != DEFAULT_RESULT && !initialTimeSet) {
             val intent = Intent(this, TimerService::class.java).apply {
-                putExtra(SECONDS_LEFT_KEY, secondsLeft)
+                putExtra(MILLIS_LEFT_KEY, millisLeft)
                 action = if (needToPause) ACTION_PAUSE else ACTION_PLAY
             }
             TimerService.shouldShow = true // maybe to intent?
@@ -165,13 +165,13 @@ class TimerActivity :
             needToPause = false
             initialTime = DEFAULT_TIME
             result = DEFAULT_RESULT
-            secondsLeft = DEFAULT_TIME
+            millisLeft = DEFAULT_TIME
             timer.text = ""
             return
         }
 
         if (timeToFinish != DEFAULT_TIME) {
-            secondsLeft = timeToFinish
+            millisLeft = timeToFinish
             if (!onPause) {
                 start_timer.performClick()
             } else {
@@ -196,7 +196,7 @@ class TimerActivity :
         private const val ACTION_PLAY = "actionPlay"
         const val BROADCAST_TIMER_ACTION = "timer_action"
         private const val DEFAULT_RESULT = "00:00:00"
-        private const val SECONDS_LEFT_KEY = "secondsLeftKey"
+        private const val MILLIS_LEFT_KEY = "millisLeftKey"
         private const val SET_TIME = "set_time"
         private const val initialDelay = 200L
         private const val delay = 500L

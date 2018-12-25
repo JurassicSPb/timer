@@ -1,5 +1,6 @@
 package timer.epam.com.timer
 
+import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
@@ -26,13 +27,14 @@ class NotificationHelper private constructor() {
     fun createInitialNotification(context: Context) {
         builder = NotificationCompat.Builder(context, CHANNEL_ID)
                 .setSmallIcon(R.drawable.ic_timer)
+                .setAutoCancel(false)
                 .setColor(ContextCompat.getColor(context, R.color.colorPrimary))
                 .setContentText(CONTENT_TEXT)
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT)
                 .addAction(R.drawable.ic_timer,
                         STOP,
-                        PendingIntent.getService(context, 0, Intent(context, TimerService::class.java).apply {
-                            action = TimerService.ACTION_STOP
+                        PendingIntent.getService(context, 2, Intent(context, TimerService::class.java).apply {
+                            action = ACTION_STOP
                         }, 0))
     }
 
@@ -40,7 +42,7 @@ class NotificationHelper private constructor() {
         val iterator = builder!!.mActions.iterator()
         while (iterator.hasNext()) {
             val element = iterator.next()
-            if (element.title == oldTitle) {
+            if (element.getTitle() == oldTitle) {
                 iterator.remove()
                 break
             }
@@ -48,9 +50,9 @@ class NotificationHelper private constructor() {
 
         builder?.addAction(R.drawable.ic_timer,
                 newTitle,
-                PendingIntent.getService(context, 2, Intent(context, TimerService::class.java).apply {
+                PendingIntent.getService(context, 3, Intent(context, TimerService::class.java).apply {
                     this.action = action
-                }, 0))
+                }, PendingIntent.FLAG_CANCEL_CURRENT))
                 ?.setContentTitle(result)
                 ?.setContentText(if (action == ACTION_PAUSE) CONTENT_TEXT else CONTENT_TEXT_PAUSE)
 
@@ -65,7 +67,7 @@ class NotificationHelper private constructor() {
         }
 
         builder?.setContentTitle(FINISHED)
-        manager?.notify(5, builder?.build())
+        manager?.notify(1, builder?.build())
     }
 
     fun updateNotificationBuilder(result: String): NotificationCompat.Builder? {
@@ -86,6 +88,10 @@ class NotificationHelper private constructor() {
         return RingtoneManager.getRingtone(context, alert)
     }
 
+    fun updateNotification(build: Notification?) {
+        manager?.notify(1, build)
+    }
+
     private object Holder {
         val INSTANCE = NotificationHelper()
     }
@@ -97,6 +103,7 @@ class NotificationHelper private constructor() {
         private const val CONTENT_TEXT = "Таймер"
         private const val CONTENT_TEXT_PAUSE = "Таймер приостановлен"
         const val ACTION_PAUSE = "actionPause"
+        const val ACTION_STOP = "actionStop"
         private const val STOP = "Cтоп"
         private const val FINISHED = "Готово!"
     }

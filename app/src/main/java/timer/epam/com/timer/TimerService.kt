@@ -19,7 +19,7 @@ class TimerService : Service() {
     private var needToPlay = false
     private var needToStop = false
     private var timeToFinish = DEFAULT_TIME
-    private var secondsLeft = DEFAULT_TIME
+    private var millisLeft = DEFAULT_TIME
 
     override fun onCreate() {
         super.onCreate()
@@ -34,15 +34,16 @@ class TimerService : Service() {
 
     override fun onBind(intent: Intent?): IBinder? = null
 
-    override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
 
-        if (intent.hasExtra(SECONDS_LEFT_KEY)) {
-            secondsLeft = intent.getLongExtra(SECONDS_LEFT_KEY, DEFAULT_TIME)
+        val hasMillisLeft = intent?.hasExtra(MILLIS_LEFT_KEY)
+        if (hasMillisLeft != null && hasMillisLeft) {
+            millisLeft = intent.getLongExtra(MILLIS_LEFT_KEY, DEFAULT_TIME)
         }
 
         cancelJob()
 
-        when (intent.action) {
+        when (intent?.action) {
             ACTION_STOP -> stopService()
             ACTION_PAUSE -> pauseService()
             ACTION_PLAY -> playService()
@@ -54,7 +55,7 @@ class TimerService : Service() {
     private fun launch() {
         job = GlobalScope.launch(Dispatchers.Default) {
 
-            timeToFinish = System.currentTimeMillis() + TimeUnit.SECONDS.toMillis(secondsLeft)
+            timeToFinish = System.currentTimeMillis() + millisLeft
             delay(initialDelay)
 
             while (true) {
@@ -68,8 +69,10 @@ class TimerService : Service() {
                     showTime(currentTime)
                     if (needToPlay) {
                         val notification = notificationHelper.switchButtonBuilder(this@TimerService, PLAY, PAUSE, ACTION_PAUSE, result)
-                        startForeground(1, notification?.build())
+                        notificationHelper.updateNotification(notification?.build())
                         needToPlay = false
+                    } else {
+                        startForeground(1, notificationHelper.updateNotificationBuilder(result)?.build())
                     }
 
                     delay(delay)
@@ -87,17 +90,15 @@ class TimerService : Service() {
 
 
     private fun showTime(currentTime: Long) {
-        secondsLeft = TimeUnit.MILLISECONDS.toSeconds(timeToFinish - currentTime)
+        millisLeft = timeToFinish - currentTime
 
-        val minutes = TimeUnit.SECONDS.toMinutes(secondsLeft) % SEC_MINS
+        val minutes = TimeUnit.MILLISECONDS.toMinutes(millisLeft) % SEC_MINS
 
-        val hours = TimeUnit.SECONDS.toHours(secondsLeft) % HOURS
+        val hours = TimeUnit.MILLISECONDS.toHours(millisLeft) % HOURS
 
-        val seconds = secondsLeft % SEC_MINS
+        val seconds = TimeUnit.MILLISECONDS.toSeconds(millisLeft) % SEC_MINS
 
         result = formatUtils.formattedTime(hours, minutes, seconds)
-
-        startForeground(1, notificationHelper.updateNotificationBuilder(result)?.build())
     }
 
     private fun stopService() {
@@ -112,7 +113,7 @@ class TimerService : Service() {
             needToPause = true
             needToPlay = false
             val currentTime = System.currentTimeMillis()
-            timeToFinish = currentTime + TimeUnit.SECONDS.toMillis(secondsLeft)
+            timeToFinish = currentTime + millisLeft
 
             delay(initialDelay)
 
@@ -137,7 +138,7 @@ class TimerService : Service() {
 
     override fun onDestroy() {
         sendBroadcast(Intent(TimerActivity.BROADCAST_TIMER_ACTION).apply {
-            putExtra(SECONDS_LEFT_SERVICE_KEY, secondsLeft)
+            putExtra(MILLIS_LEFT_SERVICE_KEY, millisLeft)
             putExtra(PAUSE_KEY, needToPause)
             putExtra(STOP_KEY, needToStop)
         })
@@ -152,10 +153,10 @@ class TimerService : Service() {
         const val ACTION_PAUSE = "actionPause"
         const val ACTION_PLAY = "actionPlay"
         private const val DEFAULT_RESULT = "00:00:00"
-        private const val SECONDS_LEFT_KEY = "secondsLeftKey"
+        private const val MILLIS_LEFT_KEY = "millisLeftKey"
         private const val PAUSE_KEY = "pauseKey"
         private const val STOP_KEY = "stopKey"
-        private const val SECONDS_LEFT_SERVICE_KEY = "secondsLeftServiceKey"
+        private const val MILLIS_LEFT_SERVICE_KEY = "millisLeftServiceKey"
         private const val initialDelay = 200L
         private const val delay = 500L
         private const val DEFAULT_TIME = 0L
