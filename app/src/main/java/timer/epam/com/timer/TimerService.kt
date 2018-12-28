@@ -29,7 +29,6 @@ class TimerService : Service() {
 
         notificationHelper = NotificationHelper.instance.apply {
             createNotificationManager(this@TimerService)
-            createInitialNotification(this@TimerService)
         }
 
         formatUtils = FormatUtils.instance

@@ -18,29 +18,47 @@ import android.support.v4.content.ContextCompat
 class NotificationHelper private constructor() {
     private var manager: NotificationManager? = null
     private var builder: NotificationCompat.Builder? = null
+    private var finishedBuilder: NotificationCompat.Builder? = null
 
     fun createNotificationManager(context: Context) {
         manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as? NotificationManager
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channel = NotificationChannel(CHANNEL_ID, CHANNEL_NAME, NotificationManager.IMPORTANCE_HIGH).apply {
+            val channel = NotificationChannel(CHANNEL_ID, CHANNEL_NAME, NotificationManager.IMPORTANCE_LOW).apply {
+                setSound(null, null)
+            }
+
+            val finishedChannel = NotificationChannel(CHANNEL_ID_FINISHED, CHANNEL_NAME_FINISHED, NotificationManager.IMPORTANCE_HIGH).apply {
                 setSound(getRingtoneUri(), AudioAttributes.Builder()
                         .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
                         .setUsage(AudioAttributes.USAGE_NOTIFICATION)
                         .build())
             }
 
-            manager?.createNotificationChannel(channel)
+            manager?.apply {
+                createNotificationChannel(channel)
+                createNotificationChannel(finishedChannel)
+            }
+        }
+
+        builder = NotificationCompat.Builder(context, CHANNEL_ID).apply {
+            createCommonBuilderSettings(context, this)
+        }
+
+        finishedBuilder = NotificationCompat.Builder(context, CHANNEL_ID_FINISHED).apply {
+            createCommonBuilderSettings(context, this)
+            setContentTitle(FINISHED)
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
+                setSound(getRingtoneUri())
+            }
         }
     }
 
-    fun createInitialNotification(context: Context) {
-        builder = NotificationCompat.Builder(context, CHANNEL_ID)
-                .setSmallIcon(R.drawable.ic_timer)
+    private fun createCommonBuilderSettings(context: Context, builder: NotificationCompat.Builder) {
+        builder.setSmallIcon(R.drawable.ic_timer)
                 .setColor(ContextCompat.getColor(context, R.color.colorPrimary))
                 .setContentText(CONTENT_TEXT)
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-
     }
 
     fun switchButtonBuilder(context: Context, newTitle: String, action: String, result: String): NotificationCompat.Builder? {
@@ -63,13 +81,11 @@ class NotificationHelper private constructor() {
     }
 
     fun finishedNotification() {
-        builder?.mActions?.clear()
+        manager?.cancel(1)
+        val notification = finishedBuilder?.build()
+        notification?.flags = notification?.flags?.or(Notification.FLAG_INSISTENT)
 
-        builder?.setContentTitle(FINISHED)
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
-            builder?.setSound(getRingtoneUri())
-        }
-        manager?.notify(3, builder?.build())
+        manager?.notify(3, notification)
     }
 
     fun updateNotificationBuilder(result: String): NotificationCompat.Builder? {
@@ -103,6 +119,8 @@ class NotificationHelper private constructor() {
         val instance: NotificationHelper by lazy { Holder.INSTANCE }
         private const val CHANNEL_ID = "timerChannelId"
         private const val CHANNEL_NAME = "timerChannel"
+        private const val CHANNEL_ID_FINISHED = "timerChannelId2"
+        private const val CHANNEL_NAME_FINISHED = "timerChannelFinished"
         private const val CONTENT_TEXT = "Таймер"
         private const val CONTENT_TEXT_PAUSE = "Таймер приостановлен"
         const val ACTION_PAUSE = "actionPause"
