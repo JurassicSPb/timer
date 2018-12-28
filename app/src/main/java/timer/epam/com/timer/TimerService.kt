@@ -14,7 +14,7 @@ import java.util.concurrent.TimeUnit
 class TimerService : Service() {
     private lateinit var formatUtils: FormatUtils
     private lateinit var notificationHelper: NotificationHelper
-    private val executorService = Executors.newSingleThreadExecutor()!!
+    private val executorService = Executors.newSingleThreadExecutor()
     private val coroutineDispatcher = executorService.asCoroutineDispatcher()
     private var result = ""
     private var job: Job? = null
@@ -55,7 +55,7 @@ class TimerService : Service() {
         return super.onStartCommand(intent, flags, startId)
     }
 
-    private fun launch() {
+    private fun runTimer() {
         job = GlobalScope.launch(coroutineDispatcher) {
 
             timeToFinish = System.currentTimeMillis() + millisLeft
@@ -79,7 +79,7 @@ class TimerService : Service() {
 
                     delay(delay)
                 } else {
-                    break // sound
+                    break
                 }
             }
 
@@ -128,7 +128,7 @@ class TimerService : Service() {
     private fun playService() {
         needToPause = false
         needToPlay = true
-        launch()
+        runTimer()
     }
 
     private fun cancelJob() {

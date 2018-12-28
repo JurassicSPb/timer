@@ -6,11 +6,14 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.media.AudioAttributes
 import android.media.Ringtone
 import android.media.RingtoneManager
+import android.net.Uri
 import android.os.Build
 import android.support.v4.app.NotificationCompat
 import android.support.v4.content.ContextCompat
+
 
 class NotificationHelper private constructor() {
     private var manager: NotificationManager? = null
@@ -20,7 +23,14 @@ class NotificationHelper private constructor() {
         manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as? NotificationManager
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            manager?.createNotificationChannel(NotificationChannel(CHANNEL_ID, CHANNEL_NAME, NotificationManager.IMPORTANCE_LOW))
+            val channel = NotificationChannel(CHANNEL_ID, CHANNEL_NAME, NotificationManager.IMPORTANCE_HIGH).apply {
+                setSound(getRingtoneUri(), AudioAttributes.Builder()
+                        .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                        .setUsage(AudioAttributes.USAGE_NOTIFICATION)
+                        .build())
+            }
+
+            manager?.createNotificationChannel(channel)
         }
     }
 
@@ -36,12 +46,12 @@ class NotificationHelper private constructor() {
     fun switchButtonBuilder(context: Context, newTitle: String, action: String, result: String): NotificationCompat.Builder? {
         builder?.mActions?.clear()
 
-        builder?.addAction(R.drawable.ic_timer,
+        builder?.addAction(R.drawable.ic_stop,
                 STOP,
                 PendingIntent.getService(context, 1, Intent(context, TimerService::class.java).apply {
                     this.action = ACTION_STOP
                 }, PendingIntent.FLAG_UPDATE_CURRENT))
-                ?.addAction(R.drawable.ic_timer,
+                ?.addAction(if (action == ACTION_PAUSE) R.drawable.ic_pause else R.drawable.ic_play,
                         newTitle,
                         PendingIntent.getService(context, 2, Intent(context, TimerService::class.java).apply {
                             this.action = action
@@ -53,14 +63,13 @@ class NotificationHelper private constructor() {
     }
 
     fun finishedNotification() {
-        val iterator = builder!!.mActions.iterator()
-        while (iterator.hasNext()) {
-            iterator.next()
-            iterator.remove()
-        }
+        builder?.mActions?.clear()
 
         builder?.setContentTitle(FINISHED)
-        manager?.notify(1, builder?.build())
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
+            builder?.setSound(getRingtoneUri())
+        }
+        manager?.notify(3, builder?.build())
     }
 
     fun updateNotificationBuilder(result: String): NotificationCompat.Builder? {
@@ -68,7 +77,7 @@ class NotificationHelper private constructor() {
         return builder
     }
 
-    fun getRingtone(context: Context): Ringtone {
+    private fun getRingtoneUri(): Uri {
         var alert = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)
 
         if (alert == null) {
@@ -77,9 +86,10 @@ class NotificationHelper private constructor() {
                 alert = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_RINGTONE)
             }
         }
-
-        return RingtoneManager.getRingtone(context, alert)
+        return alert
     }
+
+    fun getRingtone(context: Context): Ringtone = RingtoneManager.getRingtone(context, getRingtoneUri())
 
     fun updateNotification(build: Notification?) {
         manager?.notify(1, build)

@@ -25,7 +25,7 @@ class TimerActivity :
     override val coroutineContext: CoroutineContext
         get() = coroutineDispatcher
     private lateinit var job: Job
-    private val executorService = Executors.newSingleThreadExecutor()!!
+    private val executorService = Executors.newSingleThreadExecutor()
     private val coroutineDispatcher = executorService.asCoroutineDispatcher()
     private lateinit var formatUtils: FormatUtils
     private lateinit var notificationHelper: NotificationHelper
@@ -53,7 +53,7 @@ class TimerActivity :
         start_timer.setOnClickListener {
             cancelJob()
             needToPause = false
-            launch()
+            runTimer()
         }
 
         stop_timer.setOnClickListener {
@@ -77,8 +77,7 @@ class TimerActivity :
         notificationHelper = NotificationHelper.instance
     }
 
-
-    private fun launch() = launch(coroutineContext + job) {
+    private fun runTimer() = launch(coroutineContext + job) {
         when {
             initialTime == DEFAULT_TIME && initialTimeSet -> {
                 initialTimeSet = false
