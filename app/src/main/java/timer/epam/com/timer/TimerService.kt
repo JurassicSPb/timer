@@ -3,16 +3,19 @@ package timer.epam.com.timer
 import android.app.Service
 import android.content.Intent
 import android.os.IBinder
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
 class TimerService : Service() {
     private lateinit var formatUtils: FormatUtils
     private lateinit var notificationHelper: NotificationHelper
+    private val executorService = Executors.newSingleThreadExecutor()!!
+    private val coroutineDispatcher = executorService.asCoroutineDispatcher()
     private var result = ""
     private var job: Job? = null
     private var needToPause = false
@@ -53,10 +56,9 @@ class TimerService : Service() {
     }
 
     private fun launch() {
-        job = GlobalScope.launch(Dispatchers.Default) {
+        job = GlobalScope.launch(coroutineDispatcher) {
 
             timeToFinish = System.currentTimeMillis() + millisLeft
-//            delay(initialDelay)
 
             while (true) {
                 val currentTime = System.currentTimeMillis()
@@ -108,14 +110,12 @@ class TimerService : Service() {
     }
 
     private fun pauseService() {
-        job = GlobalScope.launch(Dispatchers.Default) {
+        job = GlobalScope.launch(coroutineDispatcher) {
 
             needToPause = true
             needToPlay = false
             val currentTime = System.currentTimeMillis()
             timeToFinish = currentTime + millisLeft
-
-//            delay(initialDelay)
 
             if (currentTime < timeToFinish) {
                 showTime(currentTime)
@@ -157,7 +157,6 @@ class TimerService : Service() {
         private const val PAUSE_KEY = "pauseKey"
         private const val STOP_KEY = "stopKey"
         private const val MILLIS_LEFT_SERVICE_KEY = "millisLeftServiceKey"
-        private const val initialDelay = 200L
         private const val delay = 500L
         private const val DEFAULT_TIME = 0L
         private const val HOURS = 24

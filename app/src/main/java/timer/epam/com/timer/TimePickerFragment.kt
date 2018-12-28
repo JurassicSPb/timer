@@ -4,7 +4,6 @@ import android.app.Dialog
 import android.content.DialogInterface
 import android.os.Bundle
 import android.support.v4.app.DialogFragment
-import android.text.format.DateFormat
 import android.widget.Toast
 import com.ikovac.timepickerwithseconds.MyTimePickerDialog
 
@@ -19,7 +18,7 @@ class TimePickerFragment : DialogFragment(), MyTimePickerDialog.OnTimeSetListene
                 0,
                 0,
                 0,
-                DateFormat.is24HourFormat(activity)
+                true
         ).apply {
             setButton(MyTimePickerDialog.BUTTON_POSITIVE, "Применить", this)
             setButton(MyTimePickerDialog.BUTTON_NEGATIVE, "Отмена", null as? DialogInterface.OnClickListener?)

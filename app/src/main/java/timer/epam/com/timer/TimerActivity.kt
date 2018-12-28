@@ -7,10 +7,11 @@ import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import kotlinx.android.synthetic.main.activity_timer.*
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 import kotlin.coroutines.CoroutineContext
 
@@ -22,8 +23,10 @@ class TimerActivity :
         TimePickerFragment.TimePickerCallback {
 
     override val coroutineContext: CoroutineContext
-        get() = Dispatchers.Default
+        get() = coroutineDispatcher
     private lateinit var job: Job
+    private val executorService = Executors.newSingleThreadExecutor()!!
+    private val coroutineDispatcher = executorService.asCoroutineDispatcher()
     private lateinit var formatUtils: FormatUtils
     private lateinit var notificationHelper: NotificationHelper
     private var timeToFinish = DEFAULT_TIME
@@ -88,8 +91,6 @@ class TimerActivity :
             }
             else -> timeToFinish = System.currentTimeMillis() + millisLeft
         }
-
-//        delay(initialDelay)
 
         while (true) {
             val currentTime = System.currentTimeMillis()
@@ -198,7 +199,6 @@ class TimerActivity :
         private const val DEFAULT_RESULT = "00:00:00"
         private const val MILLIS_LEFT_KEY = "millisLeftKey"
         private const val SET_TIME = "set_time"
-        private const val initialDelay = 200L
         private const val delay = 500L
         private const val DEFAULT_TIME = 0L
         private const val HOURS = 24
