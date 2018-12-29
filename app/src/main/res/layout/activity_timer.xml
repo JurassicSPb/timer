@@ -17,26 +17,32 @@
         android:id="@+id/timer_text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="24dp"
+        android:layout_marginBottom="72dp"
         android:fontFamily="sans-serif"
-        android:text="00:00"
+        android:text="00:00:00"
         android:textAppearance="@style/Base.TextAppearance.AppCompat.Large"
         android:textColor="@android:color/black"
-        android:textSize="70sp"
+        android:textSize="55sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent"/>
 
-    <!--<Button-->
-        <!--android:id="@+id/show_time_dialog"-->
-        <!--android:layout_width="100dp"-->
-        <!--android:layout_height="50dp"-->
-        <!--android:layout_marginBottom="90dp"-->
-        <!--android:background="@android:color/holo_orange_light"-->
-        <!--app:layout_constraintBottom_toTopOf="@id/timer_text"-->
-        <!--app:layout_constraintLeft_toLeftOf="parent"-->
-        <!--app:layout_constraintRight_toRightOf="parent"/>-->
+
+    <me.zhanghai.android.materialprogressbar.MaterialProgressBar
+        android:id="@+id/progress_countdown"
+        style="@style/Widget.MaterialProgressBar.ProgressBar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="72dp"
+        android:progress="100"
+        android:minHeight="320dp"
+        android:minWidth="320dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/start_timer"
@@ -81,19 +87,5 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:srcCompat="@drawable/ic_stop_black_24dp"/>
-
-    <me.zhanghai.android.materialprogressbar.MaterialProgressBar
-        android:id="@+id/progress_countdown"
-        style="@style/Widget.MaterialProgressBar.ProgressBar"
-        android:minWidth="306dp"
-        android:minHeight="306dp"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="24dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -14,7 +14,7 @@ import java.util.concurrent.TimeUnit
 class TimerService : Service() {
     private lateinit var formatUtils: FormatUtils
     private lateinit var notificationHelper: NotificationHelper
-    private val executorService = Executors.newSingleThreadExecutor()
+    private val executorService = Executors.newFixedThreadPool(2)
     private val coroutineDispatcher = executorService.asCoroutineDispatcher()
     private var result = ""
     private var job: Job? = null

@@ -15,7 +15,7 @@ class TimerBroadcast : BroadcastReceiver() {
     }
 
     interface TimerResultCallback {
-        fun onTimerResult(timeToFinish: Long, onPause: Boolean, onStop: Boolean)
+        fun onTimerResult(millisLeft: Long, onPause: Boolean, onStop: Boolean)
     }
 
     companion object {
