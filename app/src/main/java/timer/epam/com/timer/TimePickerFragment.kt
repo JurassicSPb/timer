@@ -3,8 +3,8 @@ package timer.epam.com.timer
 import android.app.Dialog
 import android.content.DialogInterface
 import android.os.Bundle
-import android.support.v4.app.DialogFragment
 import android.widget.Toast
+import androidx.fragment.app.DialogFragment
 import com.ikovac.timepickerwithseconds.MyTimePickerDialog
 
 class TimePickerFragment : DialogFragment(), MyTimePickerDialog.OnTimeSetListener {

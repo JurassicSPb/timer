@@ -4,7 +4,9 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.media.Ringtone
 import android.os.Bundle
-import android.support.v7.app.AppCompatActivity
+import android.view.Menu
+import android.view.MenuItem
+import androidx.appcompat.app.AppCompatActivity
 import kotlinx.android.synthetic.main.activity_timer.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
@@ -67,12 +69,6 @@ class TimerActivity :
             // stop rington on cancel button when time is off
         }
 
-        show_time_dialog.setOnClickListener {
-            TimePickerFragment().apply {
-                timerPickerCallback = this@TimerActivity
-            }.show(supportFragmentManager, SET_TIME)
-        }
-
         formatUtils = FormatUtils.instance
         notificationHelper = NotificationHelper.instance
     }
@@ -99,7 +95,7 @@ class TimerActivity :
 
                 delay(delay)
             } else {
-                timer.handler.post { timer.text = "" }
+                timer_text.handler.post { timer_text.text = "" }
                 ringtone = notificationHelper.getRingtone(this@TimerActivity)
                 ringtone?.play()
                 break
@@ -118,7 +114,7 @@ class TimerActivity :
 
         result = formatUtils.formattedTime(hours, minutes, seconds)
 
-        timer.handler.post { timer.text = result }
+        timer_text.handler.post { timer_text.text = result }
     }
 
     override fun onStart() {
@@ -149,7 +145,7 @@ class TimerActivity :
         cancelJob()
 
         if (hourOfDay + minute + seconds > DEFAULT_TIME) {
-            timer.text = formatUtils.formattedTime(hourOfDay.toLong(), minute.toLong(), seconds.toLong())
+            timer_text.text = formatUtils.formattedTime(hourOfDay.toLong(), minute.toLong(), seconds.toLong())
 
             initialTime = TimeUnit.HOURS.toMillis(hourOfDay.toLong()) +
                     TimeUnit.MINUTES.toMillis(minute.toLong()) +
@@ -166,7 +162,7 @@ class TimerActivity :
             initialTime = DEFAULT_TIME
             result = DEFAULT_RESULT
             millisLeft = DEFAULT_TIME
-            timer.text = ""
+            timer_text.text = ""
             return
         }
 
@@ -178,6 +174,21 @@ class TimerActivity :
                 stop_timer.performClick()
             }
         }
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.timer_menu, menu)
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem?): Boolean {
+        if (item?.itemId == R.id.set_timer) {
+            TimePickerFragment().apply {
+                timerPickerCallback = this@TimerActivity
+            }.show(supportFragmentManager, SET_TIME)
+        }
+
+        return super.onOptionsItemSelected(item)
     }
 
     private fun cancelJob() {
@@ -198,7 +209,7 @@ class TimerActivity :
         private const val DEFAULT_RESULT = "00:00:00"
         private const val MILLIS_LEFT_KEY = "millisLeftKey"
         private const val SET_TIME = "set_time"
-        private const val delay = 500L
+        private const val delay = 1000L
         private const val DEFAULT_TIME = 0L
         private const val HOURS = 24
         private const val SEC_MINS = 60

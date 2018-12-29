@@ -156,7 +156,7 @@ class TimerService : Service() {
         private const val PAUSE_KEY = "pauseKey"
         private const val STOP_KEY = "stopKey"
         private const val MILLIS_LEFT_SERVICE_KEY = "millisLeftServiceKey"
-        private const val delay = 500L
+        private const val delay = 1000L
         private const val DEFAULT_TIME = 0L
         private const val HOURS = 24
         private const val SEC_MINS = 60
