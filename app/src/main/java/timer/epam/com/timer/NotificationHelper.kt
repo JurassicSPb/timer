@@ -126,7 +126,7 @@ class NotificationHelper private constructor() {
         private const val CONTENT_TEXT_PAUSE = "Таймер приостановлен"
         const val ACTION_PAUSE = "actionPause"
         const val ACTION_STOP = "actionStop"
-        private const val STOP = "Cтоп"
+        private const val STOP = "Остановить"
         private const val FINISHED = "Готово!"
     }
 }

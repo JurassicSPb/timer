@@ -6,6 +6,7 @@ import android.media.Ringtone
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
+import android.widget.ImageView
 import androidx.appcompat.app.AppCompatActivity
 import kotlinx.android.synthetic.main.activity_timer.*
 import kotlinx.coroutines.CoroutineScope
@@ -56,41 +57,50 @@ class TimerActivity :
             timerResultCallback = this@TimerActivity
         }, filter)
 
-        start_timer.setOnClickListener {
-            it.isClickableAndFocusable(false)
-            pause_timer.isClickableAndFocusable(true)
-            stop_timer.isClickableAndFocusable(true)
-            cancelJob()
-            needToStop = false
-            needToPause = false
-            runTimer()
-        }
-
-        pause_timer.setOnClickListener {
-            it.isClickableAndFocusable(false)
-            start_timer.isClickableAndFocusable(true)
-            cancelJob()
-            needToStop = false
-            needToPause = true
-            val currentTime = System.currentTimeMillis()
-            timeToFinish = System.currentTimeMillis() + millisLeft
-            if (currentTime < timeToFinish) {
-                calcTime(currentTime)
-                timer_text.handler.post { timer_text.text = result }
+        pause_timer.apply {
+            scaleType = ImageView.ScaleType.CENTER
+            setOnClickListener {
+                it.isClickableAndFocusable(false)
+                start_timer.isClickableAndFocusable(true)
+                cancelJob()
+                needToStop = false
+                needToPause = true
+                val currentTime = System.currentTimeMillis()
+                timeToFinish = System.currentTimeMillis() + millisLeft
+                if (currentTime < timeToFinish) {
+                    calcTime(currentTime)
+                    timer_text.handler.post { timer_text.text = result }
+                }
             }
         }
 
-        stop_timer.setOnClickListener {
-            needToStop = true
-            it.isClickableAndFocusable(false)
-            start_timer.isClickableAndFocusable(true)
-            pause_timer.isClickableAndFocusable(true)
+        start_timer.apply {
+            scaleType = ImageView.ScaleType.CENTER
+            setOnClickListener {
+                it.isClickableAndFocusable(false)
+                pause_timer.isClickableAndFocusable(true)
+                stop_timer.isClickableAndFocusable(true)
+                cancelJob()
+                needToStop = false
+                needToPause = false
+                runTimer()
+            }
+        }
 
-            ringtone?.stop()
+        stop_timer.apply {
+            scaleType = ImageView.ScaleType.CENTER
+            setOnClickListener {
+                needToStop = true
+                it.isClickableAndFocusable(false)
+                start_timer.isClickableAndFocusable(true)
+                pause_timer.isClickableAndFocusable(false)
 
-            cancelJob()
+                ringtone?.stop()
 
-            timer_text.text = DEFAULT_RESULT
+                cancelJob()
+
+                resetTimerData()
+            }
         }
 
         formatUtils = FormatUtils.instance
@@ -156,6 +166,16 @@ class TimerActivity :
         progressPercentage = progress_countdown.max - millisLeft.toInt()
     }
 
+    override fun onRestoreInstanceState(state: Bundle?) {
+        super.onRestoreInstanceState(state)
+        progress_countdown.max = state?.getInt(MAX_PROGRESS_KEY) ?: DEFAULT_PROGRESS
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putInt(MAX_PROGRESS_KEY, progress_countdown.max)
+    }
+
     override fun onStart() {
         super.onStart()
 
@@ -197,16 +217,20 @@ class TimerActivity :
         }
     }
 
+    private fun resetTimerData() {
+        this.timeToFinish = DEFAULT_TIME
+        needToPause = false
+        initialTime = DEFAULT_TIME
+        result = DEFAULT_RESULT
+        this.millisLeft = DEFAULT_TIME
+        timer_text.text = DEFAULT_RESULT
+        progressPercentage = 0
+        resetProgressBar()
+    }
+
     override fun onTimerResult(millisLeft: Long, onPause: Boolean, onStop: Boolean) {
         if (onStop) {
-            this.timeToFinish = DEFAULT_TIME
-            needToPause = false
-            initialTime = DEFAULT_TIME
-            result = DEFAULT_RESULT
-            this.millisLeft = DEFAULT_TIME
-            timer_text.text = DEFAULT_RESULT
-            progressPercentage = 0
-            resetProgressBar()
+            resetTimerData()
             return
         }
 
@@ -258,5 +282,6 @@ class TimerActivity :
         private const val HOURS = 24
         private const val SEC_MINS = 60
         private const val DEFAULT_PROGRESS = 100
+        private const val MAX_PROGRESS_KEY = "maxProgressKey"
     }
 }

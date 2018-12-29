@@ -146,7 +146,7 @@ class TimerService : Service() {
     }
 
     companion object {
-        const val PAUSE = "Остановить"
+        const val PAUSE = "Пауза"
         const val PLAY = "Продолжить"
         const val ACTION_STOP = "actionStop"
         const val ACTION_PAUSE = "actionPause"
