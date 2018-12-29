@@ -43,11 +43,13 @@ class NotificationHelper private constructor() {
 
         builder = NotificationCompat.Builder(context, CHANNEL_ID).apply {
             createCommonBuilderSettings(context, this)
+            priority = NotificationCompat.PRIORITY_DEFAULT
         }
 
         finishedBuilder = NotificationCompat.Builder(context, CHANNEL_ID_FINISHED).apply {
             createCommonBuilderSettings(context, this)
             setContentTitle(FINISHED)
+            priority = NotificationCompat.PRIORITY_MAX
             if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
                 setSound(getRingtoneUri())
             }
@@ -58,7 +60,6 @@ class NotificationHelper private constructor() {
         builder.setSmallIcon(R.drawable.ic_timer)
                 .setColor(ContextCompat.getColor(context, R.color.colorPrimary))
                 .setContentText(CONTENT_TEXT)
-                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
     }
 
     fun switchButtonBuilder(context: Context, newTitle: String, action: String, result: String): NotificationCompat.Builder? {
