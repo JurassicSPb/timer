@@ -10,7 +10,10 @@
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/timer_toolbar"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:background="@color/colorPrimary"
+        app:title="Выставить время таймера"
+        app:titleTextAppearance="@style/Toolbar.TitleTextSmaller">
     </androidx.appcompat.widget.Toolbar>
 
     <TextView
@@ -26,7 +29,7 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent"/>
+        app:layout_constraintTop_toBottomOf="@id/timer_toolbar"/>
 
 
     <me.zhanghai.android.materialprogressbar.MaterialProgressBar
@@ -34,15 +37,14 @@
         style="@style/Widget.MaterialProgressBar.ProgressBar"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="72dp"
-        android:progress="100"
+        android:layout_marginBottom="75dp"
         android:minHeight="320dp"
         android:minWidth="320dp"
+        android:progress="100"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        />
+        app:layout_constraintTop_toBottomOf="@id/timer_toolbar"/>
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/start_timer"

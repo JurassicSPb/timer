@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">timer</string>
+    <string name="set_timer">Выставить время таймера</string>
 </resources>

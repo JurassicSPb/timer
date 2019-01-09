@@ -13,6 +13,7 @@ import kotlinx.android.synthetic.main.activity_timer.stop_timer as stopTimer
 import kotlinx.android.synthetic.main.activity_timer.pause_timer as pauseTimer
 import kotlinx.android.synthetic.main.activity_timer.timer_text as timerText
 import kotlinx.android.synthetic.main.activity_timer.progress_countdown as progressCountdown
+import kotlinx.android.synthetic.main.activity_timer.timer_toolbar as toolbar
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -54,6 +55,16 @@ class TimerActivity :
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_timer)
+
+        toolbar.setNavigationIcon(R.drawable.ic_back_arrow)
+        setSupportActionBar(toolbar)
+        toolbar.setNavigationOnClickListener { onBackPressed() }
+
+        supportActionBar?.apply {
+            setDisplayHomeAsUpEnabled(true)
+            setHomeButtonEnabled(true)
+            setTitle(R.string.set_timer)
+        }
 
         val filter = IntentFilter(BROADCAST_TIMER_ACTION)
 
