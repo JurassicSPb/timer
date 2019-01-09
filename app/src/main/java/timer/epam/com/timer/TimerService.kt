@@ -23,6 +23,7 @@ class TimerService : Service() {
     private var needToStop = false
     private var timeToFinish = DEFAULT_TIME
     private var millisLeft = DEFAULT_TIME
+    private var maxProgress = DEFAULT_PROGRESS
 
     override fun onCreate() {
         super.onCreate()
@@ -41,6 +42,10 @@ class TimerService : Service() {
         val hasMillisLeft = intent?.hasExtra(MILLIS_LEFT_KEY)
         if (hasMillisLeft != null && hasMillisLeft) {
             millisLeft = intent.getLongExtra(MILLIS_LEFT_KEY, DEFAULT_TIME)
+        }
+        val hasMaxProgress = intent?.hasExtra(MAX_PROGRESS_KEY)
+        if (hasMaxProgress != null && hasMaxProgress) {
+            maxProgress = intent.getIntExtra(MAX_PROGRESS_KEY, DEFAULT_PROGRESS)
         }
 
         cancelJob()
@@ -140,6 +145,7 @@ class TimerService : Service() {
             putExtra(MILLIS_LEFT_SERVICE_KEY, millisLeft)
             putExtra(PAUSE_KEY, needToPause)
             putExtra(STOP_KEY, needToStop)
+            putExtra(MAX_PROGRESS_KEY, maxProgress)
         })
         cancelJob()
         super.onDestroy()
@@ -160,6 +166,8 @@ class TimerService : Service() {
         private const val DEFAULT_TIME = 0L
         private const val HOURS = 24
         private const val SEC_MINS = 60
+        private const val DEFAULT_PROGRESS = 100
+        private const val MAX_PROGRESS_KEY = "maxProgressKey"
         @Volatile
         var shouldShow = false
     }

@@ -214,6 +214,7 @@ class TimerActivity :
         if (result != DEFAULT_RESULT && !initialTimeSet && !needToStop) {
             val intent = Intent(this, TimerService::class.java).apply {
                 putExtra(MILLIS_LEFT_KEY, millisLeft)
+                putExtra(MAX_PROGRESS_KEY, progressCountdown.max)
                 action = if (needToPause) ACTION_PAUSE else ACTION_PLAY
             }
             TimerService.shouldShow = true // maybe to intent?
@@ -254,7 +255,7 @@ class TimerActivity :
         resetProgressBar()
     }
 
-    override fun onTimerResult(millisLeft: Long, onPause: Boolean, onStop: Boolean) {
+    override fun onTimerResult(millisLeft: Long, onPause: Boolean, onStop: Boolean, maxProgress: Int) {
         if (onStop) {
             resetTimerData()
             return
@@ -262,6 +263,7 @@ class TimerActivity :
 
         if (millisLeft != DEFAULT_TIME && !restored) {
             this.millisLeft = millisLeft
+            progressCountdown.max = maxProgress
             startOrPauseTimer(onPause)
         }
 
