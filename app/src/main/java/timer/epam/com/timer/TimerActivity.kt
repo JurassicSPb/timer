@@ -74,6 +74,7 @@ class TimerActivity :
                 timeToFinish = System.currentTimeMillis() + millisLeft
                 if (currentTime < timeToFinish) {
                     calcTime(currentTime)
+                    progressCountdown.progress = progressPercentage
                     timerText.text = result
                 }
             }
@@ -252,6 +253,8 @@ class TimerActivity :
             this.millisLeft = millisLeft
             startOrPauseTimer(onPause)
         }
+
+        restored = false
     }
 
     private fun startOrPauseTimer(onPause: Boolean) {
