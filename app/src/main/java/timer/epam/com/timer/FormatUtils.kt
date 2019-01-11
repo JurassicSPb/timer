@@ -1,6 +1,5 @@
 package timer.epam.com.timer
 
-import java.text.ParseException
 import java.text.SimpleDateFormat
 import java.util.Locale
 

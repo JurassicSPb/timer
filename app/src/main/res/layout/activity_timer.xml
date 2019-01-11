@@ -58,7 +58,7 @@
         app:elevation="6dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:srcCompat="@drawable/ic_play_arrow_black_24dp"/>
+        app:srcCompat="@drawable/ic_play_arrow_vector"/>
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/pause_timer"
@@ -73,7 +73,7 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@id/stop_timer"
         app:layout_constraintStart_toEndOf="@id/start_timer"
-        app:srcCompat="@drawable/ic_pause_black_24dp"/>
+        app:srcCompat="@drawable/ic_pause_vector"/>
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/stop_timer"
@@ -87,6 +87,6 @@
         app:elevation="6dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:srcCompat="@drawable/ic_stop_black_24dp"/>
+        app:srcCompat="@drawable/ic_stop_vector"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

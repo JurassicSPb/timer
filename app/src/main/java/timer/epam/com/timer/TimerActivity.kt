@@ -122,6 +122,10 @@ class TimerActivity :
             }
         }
 
+        startTimer.isClickableAndFocusable(false)
+        pauseTimer.isClickableAndFocusable(false)
+        stopTimer.isClickableAndFocusable(false)
+
         formatUtils = FormatUtils.instance
         notificationHelper = NotificationHelper.instance
     }
